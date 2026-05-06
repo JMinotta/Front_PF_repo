@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { api } from '../services/api';
-import { BarChart3, TrendingUp, Clock, RotateCcw, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
+import { BarChart3, TrendingUp, Clock, RotateCcw, CheckCircle2, RefreshCw } from 'lucide-react';
 import './Dashboard.css'; // Reuse existing layout styles
 
 const Analytics = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       setLoading(true);
       const data = await api.getStats();
@@ -23,7 +22,7 @@ const Analytics = () => {
 
   useEffect(() => {
     fetchStats();
-  }, []);
+  }, [fetchStats]);
 
   if (loading) {
     return (

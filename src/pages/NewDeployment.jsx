@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { Rocket, Server, AlertCircle, XCircle, Plus, Trash2, Settings, Globe, Shield } from 'lucide-react';
+import { Rocket, Server, AlertCircle, Plus, Trash2, Settings, Globe, Shield } from 'lucide-react';
 
 const NewDeployment = () => {
   const navigate = useNavigate();

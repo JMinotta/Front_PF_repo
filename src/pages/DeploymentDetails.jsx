@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { ArrowLeft, Clock, CheckCircle2, XCircle, RotateCcw, ArrowUpCircle, RefreshCw } from 'lucide-react';
@@ -13,22 +13,22 @@ const DeploymentDetails = () => {
   const [error, setError] = useState(null);
   const [showRollbackModal, setShowRollbackModal] = useState(false);
 
-
-  const fetchDeployment = async () => {
+  const fetchDeployment = useCallback(async () => {
     try {
       const data = await api.getDeploymentById(id);
       setDeployment(data);
       setError(null);
     } catch (err) {
+      console.error('Error fetching deployment:', err);
       setError('Error al cargar los detalles del despliegue');
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchDeployment();
-  }, [id]);
+  }, [fetchDeployment]);
 
   useEffect(() => {
     if (!deployment) return;
@@ -36,7 +36,7 @@ const DeploymentDetails = () => {
     if (!isActive) return;
     const interval = setInterval(fetchDeployment, 3000);
     return () => clearInterval(interval);
-  }, [deployment?.status]);
+  }, [deployment?.status, fetchDeployment]);
 
   const handlePromote = async () => {
     setActionLoading(true);

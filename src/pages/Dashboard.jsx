@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { Activity, CheckCircle2, Clock, XCircle, RefreshCw, AlertCircle } from 'lucide-react';
@@ -7,24 +7,22 @@ import './Dashboard.css';
 const Dashboard = () => {
   const [deployments, setDeployments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const [filterEnv, setFilterEnv] = useState('all');
   const [actionLoading, setActionLoading] = useState(false);
   const navigate = useNavigate();
 
-  const fetchDeployments = async () => {
+  const fetchDeployments = useCallback(async () => {
     setLoading(true);
     try {
       const data = await api.getDeployments();
       setDeployments(data);
-      setError(null);
     } catch (err) {
-      setError('Failed to fetch deployments');
+      console.error('Error fetching deployments:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const handleCancel = async (id, e) => {
     e.stopPropagation();
@@ -43,7 +41,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDeployments();
-  }, []);
+  }, [fetchDeployments]);
 
   // Smart Polling: Only if there are active deployments
   useEffect(() => {

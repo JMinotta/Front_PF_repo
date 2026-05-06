@@ -1,4 +1,3 @@
-import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { LayoutDashboard, PlusCircle, Server, User, BarChart3 } from 'lucide-react';
 import './Layout.css';
