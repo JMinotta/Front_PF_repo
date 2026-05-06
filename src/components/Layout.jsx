@@ -17,18 +17,18 @@ const Layout = () => {
 
         <nav className="sidebar-nav">
           <div className="nav-section">
-            <span className="nav-section-title">Menu</span>
+            <span className="nav-section-title">Menú</span>
             <NavLink to="/" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
               <LayoutDashboard size={20} />
-              <span>Dashboard</span>
+              <span>Panel de Control</span>
             </NavLink>
             <NavLink to="/deploy" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
               <PlusCircle size={20} />
-              <span>New Deployment</span>
+              <span>Nuevo Despliegue</span>
             </NavLink>
             <NavLink to="/analytics" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
               <BarChart3 size={20} />
-              <span>Analytics</span>
+              <span>Estadísticas</span>
             </NavLink>
           </div>
         </nav>
@@ -39,8 +39,8 @@ const Layout = () => {
               <User size={18} />
             </div>
             <div className="user-info">
-              <span className="user-name">Developer</span>
-              <span className="user-role">PaaS User</span>
+              <span className="user-name">Desarrollador</span>
+              <span className="user-role">Usuario PaaS</span>
             </div>
           </div>
         </div>

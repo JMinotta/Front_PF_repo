@@ -64,8 +64,21 @@ const Dashboard = () => {
       case 'RUNNING': return <RefreshCw size={18} className="text-primary spinner" />;
       case 'ROLLED_BACK': return <AlertCircle size={18} className="text-warning" />;
       case 'QUEUED': return <Clock size={18} className="text-info" />;
+      case 'PENDING': return <Clock size={18} className="text-muted" />;
       default: return <Clock size={18} className="text-muted" />;
     }
+  };
+
+  const getStatusLabel = (status) => {
+    const labels = {
+      'RUNNING': 'En curso',
+      'SUCCESS': 'Exitoso',
+      'FAILED': 'Fallido',
+      'ROLLED_BACK': 'Revertido',
+      'QUEUED': 'En cola',
+      'PENDING': 'Pendiente'
+    };
+    return labels[status?.toUpperCase()] || status;
   };
 
   const getStatusClass = (status) => {
@@ -98,12 +111,12 @@ const Dashboard = () => {
     <div className="animate-fade-in">
       <div className="dashboard-header">
         <div>
-          <h1 className="page-title">Dashboard</h1>
-          <p className="page-subtitle">Overview of your deployment environments</p>
+          <h1 className="page-title">Panel de Control</h1>
+          <p className="page-subtitle">Vista general de tus entornos de despliegue</p>
         </div>
         <button className="btn btn-outline" onClick={fetchDeployments}>
           <RefreshCw size={16} className={loading ? "spinner" : ""} />
-          Refresh
+          Actualizar
         </button>
       </div>
 
@@ -114,7 +127,7 @@ const Dashboard = () => {
           </div>
           <div className="stat-info">
             <span className="stat-value">{stats.total}</span>
-            <span className="stat-label">Total Deployments</span>
+            <span className="stat-label">Despliegues Totales</span>
           </div>
         </div>
         <div className="stat-card glass-panel">
@@ -123,7 +136,7 @@ const Dashboard = () => {
           </div>
           <div className="stat-info">
             <span className="stat-value">{stats.success}</span>
-            <span className="stat-label">Successful</span>
+            <span className="stat-label">Exitosos</span>
           </div>
         </div>
         <div className="stat-card glass-panel">
@@ -132,7 +145,7 @@ const Dashboard = () => {
           </div>
           <div className="stat-info">
             <span className="stat-value">{stats.running}</span>
-            <span className="stat-label">In Progress</span>
+            <span className="stat-label">En Progreso</span>
           </div>
         </div>
         <div className="stat-card glass-panel">
@@ -141,19 +154,19 @@ const Dashboard = () => {
           </div>
           <div className="stat-info">
             <span className="stat-value">{stats.failed}</span>
-            <span className="stat-label">Failed / Rollbacks</span>
+            <span className="stat-label">Fallidos / Rollbacks</span>
           </div>
         </div>
       </div>
 
       <div className="deployments-section glass-panel">
         <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-          <h3>Recent Deployments</h3>
+          <h3>Despliegues Recientes</h3>
           
           <div className="filters" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
             <input 
               type="text" 
-              placeholder="Search service or image..." 
+              placeholder="Buscar servicio o imagen..." 
               className="form-control"
               style={{ width: '220px', fontSize: '0.85rem', height: '36px' }}
               value={search}
@@ -161,13 +174,13 @@ const Dashboard = () => {
             />
             <select 
               className="form-control" 
-              style={{ width: '120px', fontSize: '0.85rem', height: '36px' }}
+              style={{ width: '130px', fontSize: '0.85rem', height: '36px' }}
               value={filterEnv}
               onChange={(e) => setFilterEnv(e.target.value)}
             >
-              <option value="all">All Envs</option>
+              <option value="all">Todos los Entornos</option>
               <option value="staging">Staging</option>
-              <option value="production">Production</option>
+              <option value="production">Producción</option>
             </select>
           </div>
         </div>
@@ -175,7 +188,7 @@ const Dashboard = () => {
         {loading && deployments.length === 0 ? (
           <div className="loading-state">
             <RefreshCw className="spinner" size={32} />
-            <p>Loading deployments...</p>
+            <p>Cargando despliegues...</p>
           </div>
         ) : (
           <div className="table-responsive">
@@ -183,12 +196,12 @@ const Dashboard = () => {
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>Service</th>
-                  <th>Environment</th>
-                  <th>Image / Version</th>
-                  <th>Status</th>
-                  <th>Time</th>
-                  <th>Action</th>
+                  <th>Servicio</th>
+                  <th>Entorno</th>
+                  <th>Imagen / Versión</th>
+                  <th>Estado</th>
+                  <th>Fecha</th>
+                  <th>Acción</th>
                 </tr>
               </thead>
               <tbody>
@@ -198,14 +211,14 @@ const Dashboard = () => {
                     <td className="font-medium">{dep.service_name}</td>
                     <td>
                       <span className={`env-badge ${dep.environment}`}>
-                        {dep.environment}
+                        {dep.environment === 'production' ? 'Producción' : 'Staging'}
                       </span>
                     </td>
                     <td className="font-mono text-sm">{dep.image}</td>
                     <td>
                       <span className={getStatusClass(dep.status)}>
                         {getStatusIcon(dep.status)}
-                        <span style={{marginLeft: '6px'}}>{dep.status}</span>
+                        <span style={{marginLeft: '6px'}}>{getStatusLabel(dep.status)}</span>
                       </span>
                     </td>
                     <td className="text-sm text-secondary">
@@ -217,7 +230,7 @@ const Dashboard = () => {
                           className="btn btn-outline btn-sm"
                           onClick={() => navigate(`/deployment/${dep.id}`)}
                         >
-                          View
+                          Ver
                         </button>
                         {['PENDING', 'QUEUED'].includes(dep.status?.toUpperCase()) && (
                           <button 
@@ -226,7 +239,7 @@ const Dashboard = () => {
                             onClick={(e) => handleCancel(dep.id, e)}
                             disabled={actionLoading}
                           >
-                            Cancel
+                            Cancelar
                           </button>
                         )}
                       </div>
@@ -236,7 +249,7 @@ const Dashboard = () => {
                 {filteredDeployments.length === 0 && !loading && (
                   <tr>
                     <td colSpan="7" className="empty-state">
-                      No deployments found. Create one to get started.
+                      No se encontraron despliegues. Crea uno para comenzar.
                     </td>
                   </tr>
                 )}

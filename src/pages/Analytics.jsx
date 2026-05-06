@@ -15,7 +15,7 @@ const Analytics = () => {
       setStats(data);
     } catch (err) {
       console.error(err);
-      setError('Failed to load metrics');
+      setError('Error al cargar las métricas');
     } finally {
       setLoading(false);
     }
@@ -29,7 +29,7 @@ const Analytics = () => {
     return (
       <div className="loading-state">
         <RefreshCw className="spinner" size={32} />
-        <p>Calculating operational metrics...</p>
+        <p>Calculando métricas operativas...</p>
       </div>
     );
   }
@@ -38,12 +38,12 @@ const Analytics = () => {
     <div className="animate-fade-in">
       <div className="dashboard-header">
         <div>
-          <h1 className="page-title">Operational Analytics</h1>
-          <p className="page-subtitle">Performance metrics for PaaS lifecycle evaluation</p>
+          <h1 className="page-title">Estadísticas Operativas</h1>
+          <p className="page-subtitle">Métricas de rendimiento para la evaluación del ciclo de vida PaaS</p>
         </div>
         <button className="btn btn-outline" onClick={fetchStats}>
           <RefreshCw size={16} className={loading ? "spinner" : ""} />
-          Refresh Stats
+          Actualizar
         </button>
       </div>
 
@@ -54,7 +54,7 @@ const Analytics = () => {
           </div>
           <div className="stat-info">
             <span className="stat-value">{stats?.success_rate}%</span>
-            <span className="stat-label">Success Rate</span>
+            <span className="stat-label">Tasa de Éxito</span>
           </div>
         </div>
         
@@ -64,7 +64,7 @@ const Analytics = () => {
           </div>
           <div className="stat-info">
             <span className="stat-value">{stats?.avg_duration_seconds}s</span>
-            <span className="stat-label">Avg. Deploy Duration</span>
+            <span className="stat-label">Duración Promedio</span>
           </div>
         </div>
 
@@ -74,7 +74,7 @@ const Analytics = () => {
           </div>
           <div className="stat-info">
             <span className="stat-value">{stats?.rollback_count}</span>
-            <span className="stat-label">Rollback Events</span>
+            <span className="stat-label">Eventos de Rollback</span>
           </div>
         </div>
 
@@ -84,7 +84,7 @@ const Analytics = () => {
           </div>
           <div className="stat-info">
             <span className="stat-value">{stats?.mttr_minutes}m</span>
-            <span className="stat-label">MTTR (Avg Recovery)</span>
+            <span className="stat-label">MTTR (Recuperación)</span>
           </div>
         </div>
       </div>
@@ -92,22 +92,22 @@ const Analytics = () => {
       <div className="glass-panel" style={{ marginTop: '24px', padding: '32px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
           <BarChart3 className="text-primary" size={24} />
-          <h3 style={{ margin: 0 }}>Experimental Data (Paper DS2)</h3>
+          <h3 style={{ margin: 0 }}>Datos Experimentales (Paper DS2)</h3>
         </div>
         
         <div className="metrics-explanation" style={{ color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-          <p>This analytics module measures the efficiency of the DS2 microservices platform. 
-             According to the longitudinal design proposed in the paper, these metrics represent the <strong>"TO-BE"</strong> state 
-             of the infrastructure, allowing comparison against manual deployment methods (AS-IS).</p>
+          <p>Este módulo de analítica mide la eficiencia de la plataforma de microservicios DS2. 
+             De acuerdo al diseño longitudinal propuesto en el paper, estas métricas representan el estado <strong>"TO-BE"</strong> 
+             de la infraestructura, permitiendo la comparación contra métodos de despliegue manual (AS-IS).</p>
           
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '32px' }}>
             <div className="metric-box" style={{ padding: '20px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <h4 style={{ color: 'var(--primary)', marginBottom: '8px' }}>Efficiency Analysis</h4>
-              <p style={{ fontSize: '14px' }}>The current <strong>MTTR of {stats?.mttr_minutes} minutes</strong> demonstrates a significant reduction compared to the manual recovery average of 15-20 minutes documented in Phase 1.</p>
+              <h4 style={{ color: 'var(--primary)', marginBottom: '8px' }}>Análisis de Eficiencia</h4>
+              <p style={{ fontSize: '14px' }}>El <strong>MTTR actual de {stats?.mttr_minutes} minutos</strong> demuestra una reducción significativa comparado con el promedio de recuperación manual de 15-20 minutos documentado en la Fase 1.</p>
             </div>
             <div className="metric-box" style={{ padding: '20px', borderRadius: '12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
-              <h4 style={{ color: 'var(--success)', marginBottom: '8px' }}>Reliability</h4>
-              <p style={{ fontSize: '14px' }}>A <strong>Success Rate of {stats?.success_rate}%</strong> validates the implementation of health checks and automated rollback policies in the Kubernetes worker.</p>
+              <h4 style={{ color: 'var(--success)', marginBottom: '8px' }}>Confiabilidad</h4>
+              <p style={{ fontSize: '14px' }}>Una <strong>Tasa de Éxito del {stats?.success_rate}%</strong> valida la implementación de health checks y políticas de rollback automatizadas en el worker de Kubernetes.</p>
             </div>
           </div>
         </div>

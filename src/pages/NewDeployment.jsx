@@ -41,7 +41,7 @@ const NewDeployment = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.service_name || !formData.image) {
-      setError('Service name and Image version are required');
+      setError('El nombre del servicio y la versión de la imagen son requeridos');
       return;
     }
     
@@ -61,7 +61,7 @@ const NewDeployment = () => {
       const newDep = await api.createDeployment(payload);
       navigate(`/deployment/${newDep.id}`);
     } catch (err) {
-      setError(err.message || 'Failed to create deployment');
+      setError(err.message || 'Error al crear el despliegue');
       setLoading(false);
     }
   };
@@ -70,8 +70,8 @@ const NewDeployment = () => {
     <div className="animate-fade-in" style={{ maxWidth: '900px', margin: '0 auto', paddingBottom: '40px' }}>
       <div className="dashboard-header">
         <div>
-          <h1 className="page-title">New Deployment</h1>
-          <p className="page-subtitle">Configure and launch a new microservice controlled deployment</p>
+          <h1 className="page-title">Nuevo Despliegue</h1>
+          <p className="page-subtitle">Configura y lanza un nuevo despliegue controlado por microservicios</p>
         </div>
       </div>
 
@@ -97,34 +97,34 @@ const NewDeployment = () => {
         {/* Sección 1: Identificación */}
         <div style={{ marginBottom: '32px' }}>
           <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Server size={18} className="text-primary" /> Target Service & Image
+            <Server size={18} className="text-primary" /> Servicio e Imagen Objetivo
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
             <div className="form-group">
-              <label className="form-label">Service Name</label>
+              <label className="form-label">Nombre del Servicio</label>
               <input
                 type="text"
                 name="service_name"
                 className="form-control"
-                placeholder="e.g. auth-service"
+                placeholder="ej: auth-service"
                 value={formData.service_name}
                 onChange={handleChange}
                 disabled={loading}
               />
-              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '6px' }}>The exact name of the K8s deployment.</p>
+              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '6px' }}>El nombre exacto del deployment en K8s.</p>
             </div>
             <div className="form-group">
-              <label className="form-label">Docker Image / Version</label>
+              <label className="form-label">Imagen Docker / Versión</label>
               <input
                 type="text"
                 name="image"
                 className="form-control"
-                placeholder="e.g. ds2-frontend:v1.0.0"
+                placeholder="ej: ds2-frontend:v1.0.0"
                 value={formData.image}
                 onChange={handleChange}
                 disabled={loading}
               />
-              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '6px' }}>Must be loaded in Kind if using real mode.</p>
+              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '6px' }}>Debe estar cargada en Kind si usas el modo real.</p>
             </div>
           </div>
         </div>
@@ -133,22 +133,25 @@ const NewDeployment = () => {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', marginBottom: '32px' }}>
           <div className="form-group">
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Globe size={16} /> Target Environment
+              <Globe size={16} /> Entorno de Destino
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {['staging', 'production'].map(env => (
+              {[
+                { id: 'staging', label: 'Staging', sub: 'Ejecución en paralelo permitida' },
+                { id: 'production', label: 'Producción', sub: 'Cola serial estricta, health checks' }
+              ].map(env => (
                 <div 
-                  key={env}
-                  onClick={() => !loading && setFormData(p => ({...p, environment: env}))}
-                  className={`glass-card ${formData.environment === env ? 'active' : ''}`}
+                  key={env.id}
+                  onClick={() => !loading && setFormData(p => ({...p, environment: env.id}))}
+                  className={`glass-card ${formData.environment === env.id ? 'active' : ''}`}
                   style={{ 
                     padding: '16px', 
                     cursor: 'pointer', 
                     display: 'flex', 
                     alignItems: 'center', 
                     gap: '12px',
-                    background: formData.environment === env ? 'rgba(99, 102, 241, 0.08)' : 'rgba(255,255,255,0.02)',
-                    borderColor: formData.environment === env ? 'var(--primary-color)' : 'rgba(255,255,255,0.05)',
+                    background: formData.environment === env.id ? 'rgba(99, 102, 241, 0.08)' : 'rgba(255,255,255,0.02)',
+                    borderColor: formData.environment === env.id ? 'var(--primary-color)' : 'rgba(255,255,255,0.05)',
                     transition: 'all 0.2s ease'
                   }}
                 >
@@ -157,18 +160,16 @@ const NewDeployment = () => {
                     height: '18px', 
                     borderRadius: '50%', 
                     border: '2px solid', 
-                    borderColor: formData.environment === env ? 'var(--primary-color)' : 'var(--text-muted)',
+                    borderColor: formData.environment === env.id ? 'var(--primary-color)' : 'var(--text-muted)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}>
-                    {formData.environment === env && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary-color)' }} />}
+                    {formData.environment === env.id && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary-color)' }} />}
                   </div>
                   <div>
-                    <div style={{ fontWeight: '600', textTransform: 'capitalize', fontSize: '0.9rem' }}>{env}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      {env === 'staging' ? 'Parallel execution allowed' : 'Strict serial queue, health checks'}
-                    </div>
+                    <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{env.label}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{env.sub}</div>
                   </div>
                 </div>
               ))}
@@ -177,12 +178,12 @@ const NewDeployment = () => {
 
           <div className="form-group">
             <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Shield size={16} /> Deployment Policy
+              <Shield size={16} /> Política de Despliegue
             </label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {[
-                { id: 'replace', label: 'Replace', sub: 'Swaps instances all at once', disabled: false },
-                { id: 'canary', label: 'Canary', sub: 'Gradual rollout (Coming soon)', disabled: true }
+                { id: 'replace', label: 'Reemplazo (Replace)', sub: 'Intercambia instancias de una vez', disabled: false },
+                { id: 'canary', label: 'Canario (Canary)', sub: 'Despliegue gradual (Próximamente)', disabled: true }
               ].map(pol => (
                 <div 
                   key={pol.id}
@@ -228,11 +229,11 @@ const NewDeployment = () => {
         {/* Sección 3: Configuración K8s */}
         <div style={{ marginBottom: '32px', padding: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
           <h3 style={{ fontSize: '0.9rem', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Settings size={16} /> Advanced K8s Settings
+            <Settings size={16} /> Configuración Avanzada K8s
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
             <div>
-              <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '6px', display: 'block' }}>Health Check Path</label>
+              <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '6px', display: 'block' }}>Ruta de Health Check</label>
               <input
                 type="text"
                 name="health_path"
@@ -243,7 +244,7 @@ const NewDeployment = () => {
               />
             </div>
             <div>
-              <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '6px', display: 'block' }}>Container Port</label>
+              <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '6px', display: 'block' }}>Puerto del Contenedor</label>
               <input
                 type="number"
                 name="container_port"
@@ -259,10 +260,10 @@ const NewDeployment = () => {
         <div style={{ marginBottom: '40px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <h3 style={{ fontSize: '0.9rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Plus size={16} /> Environment Variables
+              <Plus size={16} /> Variables de Entorno
             </h3>
             <button type="button" onClick={addEnvVar} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
-              Add Variable
+              Agregar Variable
             </button>
           </div>
           
@@ -273,7 +274,7 @@ const NewDeployment = () => {
                   type="text"
                   className="form-control"
                   style={{ flex: 1, fontSize: '0.85rem' }}
-                  placeholder="KEY"
+                  placeholder="CLAVE"
                   value={ev.key}
                   onChange={(e) => handleEnvChange(index, 'key', e.target.value.toUpperCase())}
                 />
@@ -281,7 +282,7 @@ const NewDeployment = () => {
                   type="text"
                   className="form-control"
                   style={{ flex: 2, fontSize: '0.85rem' }}
-                  placeholder="VALUE"
+                  placeholder="VALOR"
                   value={ev.value}
                   onChange={(e) => handleEnvChange(index, 'value', e.target.value)}
                 />
@@ -300,10 +301,10 @@ const NewDeployment = () => {
             style={{ flex: 2, height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', fontSize: '1rem' }}
             disabled={loading}
           >
-            {loading ? <div className="spinner" style={{ width: '20px', height: '20px' }}></div> : <><Rocket size={20} /> Launch Deployment</>}
+            {loading ? <div className="spinner" style={{ width: '20px', height: '20px' }}></div> : <><Rocket size={20} /> Lanzar Despliegue</>}
           </button>
           <button type="button" onClick={() => navigate('/')} className="btn btn-secondary" style={{ flex: 1, height: '48px' }}>
-            Cancel
+            Cancelar
           </button>
         </div>
       </form>
