@@ -40,7 +40,12 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    fetchDeployments();
+    let isMounted = true;
+    const load = async () => {
+      if (isMounted) await fetchDeployments();
+    };
+    load();
+    return () => { isMounted = false; };
   }, [fetchDeployments]);
 
   // Smart Polling: Only if there are active deployments
@@ -53,7 +58,7 @@ const Dashboard = () => {
 
     const interval = setInterval(fetchDeployments, 4000);
     return () => clearInterval(interval);
-  }, [deployments]);
+  }, [deployments, fetchDeployments]);
 
   const getStatusIcon = (status) => {
     switch(status?.toUpperCase()) {

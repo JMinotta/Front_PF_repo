@@ -27,7 +27,12 @@ const DeploymentDetails = () => {
   }, [id]);
 
   useEffect(() => {
-    fetchDeployment();
+    let isMounted = true;
+    const load = async () => {
+      if (isMounted) await fetchDeployment();
+    };
+    load();
+    return () => { isMounted = false; };
   }, [fetchDeployment]);
 
   useEffect(() => {
@@ -36,7 +41,7 @@ const DeploymentDetails = () => {
     if (!isActive) return;
     const interval = setInterval(fetchDeployment, 3000);
     return () => clearInterval(interval);
-  }, [deployment?.status, fetchDeployment]);
+  }, [deployment, fetchDeployment]);
 
   const handlePromote = async () => {
     setActionLoading(true);

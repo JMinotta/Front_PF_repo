@@ -14,14 +14,18 @@ const Analytics = () => {
       setStats(data);
     } catch (err) {
       console.error(err);
-      setError('Error al cargar las métricas');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchStats();
+    let isMounted = true;
+    const load = async () => {
+      if (isMounted) await fetchStats();
+    };
+    load();
+    return () => { isMounted = false; };
   }, [fetchStats]);
 
   if (loading) {
