@@ -1,11 +1,12 @@
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const MOCK_TOKEN = '550e8400-e29b-41d4-a716-446655440000'; // Paper demo stub
 
 export const api = {
   // Get all deployments
   getDeployments: async () => {
     try {
       const res = await fetch(`${BASE_URL}/deployments`, {
-        headers: { 'Authorization': 'Bearer 550e8400-e29b-41d4-a716-446655440000' }
+        headers: { 'Authorization': `Bearer ${MOCK_TOKEN}` }
       });
       if (!res.ok) throw new Error('Failed to fetch deployments');
       const data = await res.json();
@@ -21,14 +22,14 @@ export const api = {
   getDeploymentById: async (id) => {
     try {
       const res = await fetch(`${BASE_URL}/deployments/${id}`, {
-        headers: { 'Authorization': 'Bearer 550e8400-e29b-41d4-a716-446655440000' }
+        headers: { 'Authorization': `Bearer ${MOCK_TOKEN}` }
       });
       if (!res.ok) throw new Error('Failed to fetch deployment details');
       const deployment = await res.json();
 
       // Fetch deployment events
       const eventsRes = await fetch(`${BASE_URL}/deployments/${id}/events`, {
-        headers: { 'Authorization': 'Bearer 550e8400-e29b-41d4-a716-446655440000' }
+        headers: { 'Authorization': `Bearer ${MOCK_TOKEN}` }
       });
       let events = [];
       if (eventsRes.ok) {
@@ -49,15 +50,18 @@ export const api = {
       service_name: data.service_name || data.service,
       image: data.image,
       environment: data.environment,
-      policy: data.policy || 'replace'
+      policy: data.policy || 'replace',
+      health_path: data.health_path || '/',
+      container_port: data.container_port || 80,
+      env_vars: data.env_vars || null
     };
     
     try {
       const res = await fetch(`${BASE_URL}/deployments`, {
         method: 'POST',
-        headers: {
+        headers: { 
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer 550e8400-e29b-41d4-a716-446655440000'
+          'Authorization': `Bearer ${MOCK_TOKEN}`
         },
         body: JSON.stringify(payload)
       });
@@ -78,7 +82,10 @@ export const api = {
     try {
       const res = await fetch(`${BASE_URL}/deployments/${id}/promote`, {
         method: 'POST',
-        headers: { 'Authorization': 'Bearer 550e8400-e29b-41d4-a716-446655440000' }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${MOCK_TOKEN}`
+        }
       });
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
@@ -98,7 +105,7 @@ export const api = {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer 550e8400-e29b-41d4-a716-446655440000'
+          'Authorization': `Bearer ${MOCK_TOKEN}`
         },
         body: JSON.stringify({ reason })
       });
@@ -106,6 +113,41 @@ export const api = {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.detail || 'Failed to execute rollback on backend.');
       }
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  },
+
+  // Cancel a pending/queued deployment
+  cancelDeployment: async (id) => {
+    try {
+      const res = await fetch(`${BASE_URL}/deployments/${id}/cancel`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${MOCK_TOKEN}`
+        }
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.detail || 'Failed to cancel deployment');
+      }
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  },
+
+  // Get operational stats for Analytics
+  getStats: async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/deployments/stats`, {
+        headers: { 'Authorization': `Bearer ${MOCK_TOKEN}` }
+      });
+      if (!res.ok) throw new Error('Failed to fetch stats');
       return await res.json();
     } catch (err) {
       console.error(err);

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { LayoutDashboard, PlusCircle, Server, Settings, User } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, Server, User, BarChart3 } from 'lucide-react';
 import './Layout.css';
 
 const Layout = () => {
@@ -26,6 +26,10 @@ const Layout = () => {
               <PlusCircle size={20} />
               <span>New Deployment</span>
             </NavLink>
+            <NavLink to="/analytics" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+              <BarChart3 size={20} />
+              <span>Analytics</span>
+            </NavLink>
           </div>
         </nav>
 
@@ -49,7 +53,7 @@ const Layout = () => {
             {/* Optional search or context info */}
           </div>
           <div className="top-actions">
-            <button className="icon-btn"><Settings size={20} /></button>
+            {/* Settings removed per feedback */}
           </div>
         </header>
         

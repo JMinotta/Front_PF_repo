@@ -13,6 +13,7 @@ const DeploymentDetails = () => {
   const [error, setError] = useState(null);
   const [showRollbackModal, setShowRollbackModal] = useState(false);
 
+
   const fetchDeployment = async () => {
     try {
       const data = await api.getDeploymentById(id);
@@ -27,15 +28,15 @@ const DeploymentDetails = () => {
 
   useEffect(() => {
     fetchDeployment();
-    
-    // Auto refresh every 3 seconds if not in a final state
-    let interval;
-    if (deployment && ['PENDING', 'QUEUED', 'RUNNING'].includes(deployment.status?.toUpperCase())) {
-      interval = setInterval(fetchDeployment, 3000);
-    }
-    
+  }, [id]);
+
+  useEffect(() => {
+    if (!deployment) return;
+    const isActive = ['PENDING', 'QUEUED', 'RUNNING'].includes(deployment.status?.toUpperCase());
+    if (!isActive) return;
+    const interval = setInterval(fetchDeployment, 3000);
     return () => clearInterval(interval);
-  }, [id, deployment?.status]);
+  }, [deployment?.status]);
 
   const handlePromote = async () => {
     setActionLoading(true);
@@ -56,6 +57,18 @@ const DeploymentDetails = () => {
       fetchDeployment();
     } catch (err) {
       setError(err.message || 'Failed to execute rollback');
+      setActionLoading(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!window.confirm('Are you sure you want to cancel this pending deployment?')) return;
+    setActionLoading(true);
+    try {
+      await api.cancelDeployment(id);
+      fetchDeployment();
+    } catch (err) {
+      setError(err.message || 'Failed to cancel deployment');
       setActionLoading(false);
     }
   };
@@ -86,7 +99,7 @@ const DeploymentDetails = () => {
       return <RefreshCw size={14} className="spinner text-primary" />;
     }
 
-    switch(event.event_type) {
+    switch (event.event_type) {
       case 'REQUEST_CREATED':
       case 'ENQUEUED':
         return <Clock size={14} className="text-info" />;
@@ -119,16 +132,16 @@ const DeploymentDetails = () => {
             <ArrowLeft size={16} /> Back to Dashboard
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '16px' }}>
-            <h1 className="page-title" style={{ margin: 0 }}>Deployment {deployment.id.substring(0,8)}</h1>
+            <h1 className="page-title" style={{ margin: 0 }}>Deployment {deployment.id.substring(0, 8)}</h1>
             <span className={`badge ${s?.toLowerCase().replace('_', '')}`}>
               {deployment.status}
             </span>
           </div>
         </div>
-        
+
         <div className="deployment-actions">
           {s === 'SUCCESS' && (
-            <a 
+            <a
               href={`http://${deployment.service_name}.paas.local`}
               target="_blank"
               rel="noopener noreferrer"
@@ -139,24 +152,35 @@ const DeploymentDetails = () => {
               Open App
             </a>
           )}
-          
+
           {deployment.environment === 'staging' && s === 'SUCCESS' && (
-            <button 
-              className="btn btn-primary" 
+            <button
+              className="btn btn-primary"
               onClick={handlePromote}
               disabled={actionLoading}
             >
               {actionLoading ? 'Processing...' : <><ArrowUpCircle size={16} /> Promote to Production</>}
             </button>
           )}
-          
+
           {(s === 'SUCCESS' || s === 'FAILED') && (
-            <button 
-              className="btn btn-danger" 
+            <button
+              className="btn btn-danger"
               onClick={() => setShowRollbackModal(true)}
               disabled={actionLoading}
             >
               <RotateCcw size={16} /> Execute Rollback
+            </button>
+          )}
+
+          {['PENDING', 'QUEUED'].includes(s) && (
+            <button
+              className="btn btn-outline"
+              style={{ color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.2)' }}
+              onClick={handleCancel}
+              disabled={actionLoading}
+            >
+              <XCircle size={16} /> Cancel Deployment
             </button>
           )}
         </div>
@@ -229,7 +253,7 @@ const DeploymentDetails = () => {
           <div className="modal-content glass-panel animate-fade-in">
             <h2 className="modal-title">Confirm Rollback</h2>
             <p className="modal-body">
-              Are you sure you want to rollback deployment <strong>{deployment.id.substring(0,8)}...</strong> for <strong>{deployment.service_name}</strong>?
+              Are you sure you want to rollback deployment <strong>{deployment.id.substring(0, 8)}...</strong> for <strong>{deployment.service_name}</strong>?
               This action will restore the previous stable version in {deployment.environment}.
             </p>
             <div className="modal-actions">

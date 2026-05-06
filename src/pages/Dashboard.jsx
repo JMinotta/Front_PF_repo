@@ -8,6 +8,9 @@ const Dashboard = () => {
   const [deployments, setDeployments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [search, setSearch] = useState('');
+  const [filterEnv, setFilterEnv] = useState('all');
+  const [actionLoading, setActionLoading] = useState(false);
   const navigate = useNavigate();
 
   const fetchDeployments = async () => {
@@ -23,13 +26,36 @@ const Dashboard = () => {
     }
   };
 
+  const handleCancel = async (id, e) => {
+    e.stopPropagation();
+    if (!window.confirm('Are you sure you want to cancel this pending deployment?')) return;
+    
+    setActionLoading(true);
+    try {
+      await api.cancelDeployment(id);
+      fetchDeployments();
+    } catch (err) {
+      alert(err.message || 'Failed to cancel deployment');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchDeployments();
-    
-    // Auto refresh every 5 seconds for simulation
-    const interval = setInterval(fetchDeployments, 5000);
-    return () => clearInterval(interval);
   }, []);
+
+  // Smart Polling: Only if there are active deployments
+  useEffect(() => {
+    const hasActive = deployments.some(d => 
+      ['PENDING', 'QUEUED', 'RUNNING'].includes(d.status?.toUpperCase())
+    );
+    
+    if (!hasActive) return;
+
+    const interval = setInterval(fetchDeployments, 4000);
+    return () => clearInterval(interval);
+  }, [deployments]);
 
   const getStatusIcon = (status) => {
     switch(status?.toUpperCase()) {
@@ -43,14 +69,23 @@ const Dashboard = () => {
   };
 
   const getStatusClass = (status) => {
-    const s = status?.toUpperCase();
-    if(s === 'RUNNING') return 'badge running';
-    if(s === 'SUCCESS') return 'badge success';
-    if(s === 'FAILED') return 'badge failed';
-    if(s === 'ROLLED_BACK') return 'badge rollbacked';
-    if(s === 'QUEUED') return 'badge queued';
-    return 'badge pending';
+    const statusMap = {
+      'RUNNING': 'badge running',
+      'SUCCESS': 'badge success',
+      'FAILED': 'badge failed',
+      'ROLLED_BACK': 'badge rollbacked',
+      'QUEUED': 'badge queued',
+      'PENDING': 'badge pending'
+    };
+    return statusMap[status?.toUpperCase()] || 'badge pending';
   };
+
+  const filteredDeployments = deployments.filter(d => {
+    const matchesSearch = d.service_name.toLowerCase().includes(search.toLowerCase()) || 
+                          d.image.toLowerCase().includes(search.toLowerCase());
+    const matchesEnv = filterEnv === 'all' || d.environment === filterEnv;
+    return matchesSearch && matchesEnv;
+  });
 
   const stats = {
     total: deployments.length,
@@ -112,8 +147,29 @@ const Dashboard = () => {
       </div>
 
       <div className="deployments-section glass-panel">
-        <div className="section-header">
+        <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <h3>Recent Deployments</h3>
+          
+          <div className="filters" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <input 
+              type="text" 
+              placeholder="Search service or image..." 
+              className="form-control"
+              style={{ width: '220px', fontSize: '0.85rem', height: '36px' }}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <select 
+              className="form-control" 
+              style={{ width: '120px', fontSize: '0.85rem', height: '36px' }}
+              value={filterEnv}
+              onChange={(e) => setFilterEnv(e.target.value)}
+            >
+              <option value="all">All Envs</option>
+              <option value="staging">Staging</option>
+              <option value="production">Production</option>
+            </select>
+          </div>
         </div>
         
         {loading && deployments.length === 0 ? (
@@ -136,7 +192,7 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {deployments.map(dep => (
+                {filteredDeployments.map(dep => (
                   <tr key={dep.id} className="table-row">
                     <td className="font-mono text-sm">{dep.id.substring(0, 8)}...</td>
                     <td className="font-medium">{dep.service_name}</td>
@@ -156,16 +212,28 @@ const Dashboard = () => {
                       {new Date(dep.created_at).toLocaleString()}
                     </td>
                     <td>
-                      <button 
-                        className="btn btn-outline btn-sm"
-                        onClick={() => navigate(`/deployment/${dep.id}`)}
-                      >
-                        View Details
-                      </button>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                          className="btn btn-outline btn-sm"
+                          onClick={() => navigate(`/deployment/${dep.id}`)}
+                        >
+                          View
+                        </button>
+                        {['PENDING', 'QUEUED'].includes(dep.status?.toUpperCase()) && (
+                          <button 
+                            className="btn btn-outline btn-sm"
+                            style={{ color: 'var(--danger)', borderColor: 'rgba(239, 68, 68, 0.2)' }}
+                            onClick={(e) => handleCancel(dep.id, e)}
+                            disabled={actionLoading}
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
-                {deployments.length === 0 && !loading && (
+                {filteredDeployments.length === 0 && !loading && (
                   <tr>
                     <td colSpan="7" className="empty-state">
                       No deployments found. Create one to get started.
