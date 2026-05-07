@@ -1,16 +1,34 @@
+import { supabase } from './supabase';
+
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-const MOCK_TOKEN = '550e8400-e29b-41d4-a716-446655440000'; // Paper demo stub
+
+// Helper to get auth headers with dynamic Supabase token
+const getAuthHeaders = async (isJson = true) => {
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token || 'no-token';
+  
+  if (token === 'no-token') {
+    console.warn('⚠️ API Call: No hay sesión activa de Supabase');
+  } else {
+    console.log('✅ API Call: Enviando token de Supabase (primeros 10 caracteres):', token.substring(0, 10));
+  }
+
+  const headers = {
+    'Authorization': `Bearer ${token}`
+  };
+  if (isJson) headers['Content-Type'] = 'application/json';
+  return headers;
+};
 
 export const api = {
   // Get all deployments
   getDeployments: async () => {
     try {
       const res = await fetch(`${BASE_URL}/deployments`, {
-        headers: { 'Authorization': `Bearer ${MOCK_TOKEN}` }
+        headers: await getAuthHeaders(false)
       });
       if (!res.ok) throw new Error('Failed to fetch deployments');
       const data = await res.json();
-      // Ensure it's sorted by created_at descending if backend didn't sort
       return data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     } catch (err) {
       console.error(err);
@@ -21,22 +39,22 @@ export const api = {
   // Get single deployment by ID
   getDeploymentById: async (id) => {
     try {
+      const authHeaders = await getAuthHeaders(false);
       const res = await fetch(`${BASE_URL}/deployments/${id}`, {
-        headers: { 'Authorization': `Bearer ${MOCK_TOKEN}` }
+        headers: authHeaders
       });
       if (!res.ok) throw new Error('Failed to fetch deployment details');
       const deployment = await res.json();
 
       // Fetch deployment events
       const eventsRes = await fetch(`${BASE_URL}/deployments/${id}/events`, {
-        headers: { 'Authorization': `Bearer ${MOCK_TOKEN}` }
+        headers: authHeaders
       });
       let events = [];
       if (eventsRes.ok) {
         events = await eventsRes.json();
       }
       
-      // Combine them as expected by the frontend
       return { ...deployment, events };
     } catch (err) {
       console.error(err);
@@ -59,10 +77,7 @@ export const api = {
     try {
       const res = await fetch(`${BASE_URL}/deployments`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${MOCK_TOKEN}`
-        },
+        headers: await getAuthHeaders(),
         body: JSON.stringify(payload)
       });
       
@@ -82,10 +97,7 @@ export const api = {
     try {
       const res = await fetch(`${BASE_URL}/deployments/${id}/promote`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${MOCK_TOKEN}`
-        }
+        headers: await getAuthHeaders()
       });
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
@@ -103,10 +115,7 @@ export const api = {
     try {
       const res = await fetch(`${BASE_URL}/deployments/${id}/rollback`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${MOCK_TOKEN}`
-        },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ reason })
       });
       if (!res.ok) {
@@ -125,10 +134,7 @@ export const api = {
     try {
       const res = await fetch(`${BASE_URL}/deployments/${id}/cancel`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${MOCK_TOKEN}`
-        }
+        headers: await getAuthHeaders()
       });
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
@@ -145,7 +151,7 @@ export const api = {
   getStats: async () => {
     try {
       const res = await fetch(`${BASE_URL}/deployments/stats`, {
-        headers: { 'Authorization': `Bearer ${MOCK_TOKEN}` }
+        headers: await getAuthHeaders(false)
       });
       if (!res.ok) throw new Error('Failed to fetch stats');
       return await res.json();

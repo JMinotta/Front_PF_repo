@@ -259,10 +259,10 @@ const NewDeployment = () => {
         {/* Sección 4: Variables de Entorno */}
         <div style={{ marginBottom: '40px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '0.9rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h3 style={{ fontSize: '0.9rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', color: '#f8fafc' }}>
               <Plus size={16} /> Variables de Entorno
             </h3>
-            <button type="button" onClick={addEnvVar} className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
+            <button type="button" onClick={addEnvVar} className="btn btn-secondary" style={{ padding: '6px 16px', fontSize: '0.8rem', fontWeight: '600', color: '#fff' }}>
               Agregar Variable
             </button>
           </div>
@@ -303,7 +303,7 @@ const NewDeployment = () => {
           >
             {loading ? <div className="spinner" style={{ width: '20px', height: '20px' }}></div> : <><Rocket size={20} /> Lanzar Despliegue</>}
           </button>
-          <button type="button" onClick={() => navigate('/')} className="btn btn-secondary" style={{ flex: 1, height: '48px' }}>
+          <button type="button" onClick={() => navigate('/')} className="btn btn-secondary" style={{ flex: 1, height: '48px', fontWeight: '600', color: '#fff' }}>
             Cancelar
           </button>
         </div>
